@@ -1,1 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SRT Translator · EN → HE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d0d0d;
+      --surface:  #141414;
+      --border:   #2a2a2a;
+      --accent:   #d4ff00;
+      --accent2:  #00d4ff;
+      --text:     #e8e8e8;
+      --muted:    #666;
+      --danger:   #ff4d4d;
+      --success:  #00e676;
+      --mono:     'IBM Plex Mono', monospace;
+      --sans:     'IBM Plex Sans', sans-serif;
+      --radius:   4px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      width: 100%;
+      max-width: 680px;
+      margin-bottom: 48px;
+    }
+
+    .tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 300;
+    }
+
+    /* ── Card ── */
+    .card {
+      width: 100%;
+      max-width: 680px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+    }
+
+    /* ── API key field ── */
+    .field-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .api-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+      align-items: center;
+    }
+
+    input[type="password"], input[type="text"] {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus { border-color: var(--accent); }
+
+    .toggle-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 10px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Drop zone ── */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 52px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    .dropzone.drag-over {
+      border-color: var(--accent);
+      background: rgba(212, 255, 0, 0.04);
+    }
+
+    .dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-icon {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .drop-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .drop-hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .drop-hint code {
+      font-family: var(--mono);
+      color: var(--accent2);
+      font-size: 0.78rem;
+    }
+
+    /* ── File list ── */
+    .file-list {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .file-item .file-name { flex: 1; color: var(--text); }
+
+    .file-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 2px;
+      transition: color 0.2s;
+    }
+    .file-remove:hover { color: var(--danger); }
+
+    /* ── Translate button ── */
+    .translate-btn {
+      width: 100%;
+      margin-top: 24px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .translate-btn:hover:not(:disabled) { opacity: 0.88; }
+    .translate-btn:active:not(:disabled) { transform: scale(0.99); }
+    .translate-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── Status ── */
+    .status {
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.6;
+      display: none;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .status.info    { display: block; background: rgba(0,212,255,0.07); border: 1px solid rgba(0,212,255,0.25); color: var(--accent2); }
+    .status.error   { display: block; background: rgba(255,77,77,0.07); border: 1px solid rgba(255,77,77,0.25); color: var(--danger); }
+    .status.success { display: block; background: rgba(0,230,118,0.07); border: 1px solid rgba(0,230,118,0.25); color: var(--success); }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 40px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <p class="tag">Subtitle Tool</p>
+    <h1>SRT Translator<br><span>English → Hebrew</span></h1>
+    <p class="subtitle">Drag &amp; drop SRT files, a ZIP archive, or a folder.<br>Full-context translation powered by GPT-4o.</p>
+  </header>
+
+  <div class="card">
+
+    <!-- API Key -->
+    <p class="field-label">OpenAI API Key</p>
+    <div class="api-row">
+      <input type="password" id="apiKey" placeholder="sk-proj-..." autocomplete="off" />
+      <button class="toggle-btn" onclick="toggleKey()">show</button>
+    </div>
+
+    <!-- Drop Zone -->
+    <p class="field-label">Files</p>
+    <div class="dropzone" id="dropzone"
+         ondragover="onDragOver(event)"
+         ondragleave="onDragLeave(event)"
+         ondrop="onDrop(event)">
+      <input type="file" id="fileInput" multiple accept=".srt,.zip"
+             onchange="onFileInput(event)" />
+      <span class="drop-icon">⌁</span>
+      <p class="drop-title">Drop files here or click to browse</p>
+      <p class="drop-hint">
+        Accepted: <code>.srt</code> &nbsp;·&nbsp; <code>.zip</code> containing SRT files<br>
+        Single file → downloads as <code>name_hebrew.srt</code><br>
+        Multiple files → downloads as <code>translated_hebrew.zip</code>
+      </p>
+    </div>
+
+    <div class="file-list" id="fileList"></div>
+
+    <button class="translate-btn" id="translateBtn" onclick="startTranslation()" disabled>
+      Translate
+    </button>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <footer>running locally · your API key is never stored</footer>
+
+  <script>
+    let selectedFiles = [];
+
+    // ── Key toggle ──
+    function toggleKey() {
+      const inp = document.getElementById("apiKey");
+      const btn = event.target;
+      if (inp.type === "password") { inp.type = "text";     btn.textContent = "hide"; }
+      else                         { inp.type = "password"; btn.textContent = "show"; }
+    }
+
+    // ── Drag & drop ──
+    function onDragOver(e) {
+      e.preventDefault();
+      document.getElementById("dropzone").classList.add("drag-over");
+    }
+    function onDragLeave(e) {
+      document.getElementById("dropzone").classList.remove("drag-over");
+    }
+    function onDrop(e) {
+      e.preventDefault();
+      document.getElementById("dropzone").classList.remove("drag-over");
+      addFiles([...e.dataTransfer.files]);
+    }
+    function onFileInput(e) {
+      addFiles([...e.target.files]);
+      e.target.value = "";   // reset so same file can be re-added
+    }
+
+    // ── File management ──
+    function addFiles(incoming) {
+      const valid = incoming.filter(f =>
+        f.name.toLowerCase().endsWith(".srt") ||
+        f.name.toLowerCase().endsWith(".zip")
+      );
+      valid.forEach(f => {
+        if (!selectedFiles.find(x => x.name === f.name && x.size === f.size))
+          selectedFiles.push(f);
+      });
+      renderFileList();
+    }
+
+    function removeFile(idx) {
+      selectedFiles.splice(idx, 1);
+      renderFileList();
+    }
+
+    function renderFileList() {
+      const list = document.getElementById("fileList");
+      list.innerHTML = "";
+      selectedFiles.forEach((f, i) => {
+        const size = f.size < 1024
+          ? f.size + " B"
+          : (f.size / 1024).toFixed(1) + " KB";
+        list.innerHTML += `
+          <div class="file-item">
+            <span class="file-name">${f.name}</span>
+            <span>${size}</span>
+            <button class="file-remove" onclick="removeFile(${i})">✕</button>
+          </div>`;
+      });
+      document.getElementById("translateBtn").disabled = selectedFiles.length === 0;
+    }
+
+    // ── Translation ──
+    async function startTranslation() {
+      const apiKey = document.getElementById("apiKey").value.trim();
+      if (!apiKey) { showStatus("error", "Please enter your OpenAI API key."); return; }
+      if (selectedFiles.length === 0) { showStatus("error", "Please add at least one SRT or ZIP file."); return; }
+
+      showStatus("info", `\u29d7 Translating ${selectedFiles.length} file(s)… this may take a few minutes.`);
+      document.getElementById("translateBtn").disabled = true;
+
+      const form = new FormData();
+      form.append("api_key", apiKey);
+      selectedFiles.forEach(f => form.append("files", f));
+
+      try {
+        const res = await fetch("/translate", { method: "POST", body: form });
+
+        if (!res.ok) {
+          const err = await res.json();
+          showStatus("error", "Error: " + (err.error || res.statusText));
+          return;
+        }
+
+        // Determine filename from Content-Disposition header
+        const cd = res.headers.get("Content-Disposition") || "";
+        const match = cd.match(/filename="?([^"]+)"?/);
+        const filename = match ? match[1] : "translated.srt";
+
+        const blob = await res.blob();
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement("a");
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showStatus("success", `✓ Done! "${filename}" has been downloaded.`);
+        selectedFiles = [];
+        renderFileList();
+
+      } catch (err) {
+        showStatus("error", "Network error: " + err.message);
+      } finally {
+        document.getElementById("translateBtn").disabled = false;
+      }
+    }
+
+    function showStatus(type, msg) {
+      const el = document.getElementById("status");
+      el.className = "status " + type;
+      el.innerHTML = type === "info"
+        ? `<span class="spinner"></span>${msg}`
+        : msg;
+    }
+  </script>
+</body>
+</html>
 
